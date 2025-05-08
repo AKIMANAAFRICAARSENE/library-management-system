@@ -57,6 +57,26 @@
             size: letter portrait;
             margin: 1cm;
         }
+
+        /* For activity-only printing */
+        body.print-activity-only .bg-white:not(.activity-section),
+        body.print-activity-only .print:hidden,
+        body.print-activity-only nav,
+        body.print-activity-only .date-filter-form,
+        body.print-activity-only .grid {
+            display: none !important;
+        }
+
+        body.print-activity-only .activity-section {
+            display: block !important;
+            page-break-before: avoid;
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        body.print-activity-only {
+            display: block !important;
+        }
     }
 </style>
 @endpush
@@ -64,8 +84,60 @@
 @section('content')
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <!-- Date Filter Form -->
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6 print:hidden date-filter-form">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Filter Report by Date Range</h3>
+
+                <form action="{{ route('reports.index') }}" method="GET" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" value="{{ $startDate ? $startDate->format('Y-m-d') : '' }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                            <input type="date" name="end_date" id="end_date" value="{{ $endDate ? $endDate->format('Y-m-d') : '' }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+
+                        <div class="flex items-end">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Apply Filter
+                            </button>
+                            @if($startDate || $endDate)
+                                <a href="{{ route('reports.index') }}" class="ml-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    Reset
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Current Filter Indicator -->
+        @if($startDate && $endDate)
+        <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                        Showing results from <strong>{{ $startDate->format('M d, Y') }}</strong> to <strong>{{ $endDate->format('M d, Y') }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- System Overview -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+        {{-- <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">System Overview</h3>
 
@@ -91,12 +163,12 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Recent Activity -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6 activity-section">
             <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Recent Activity</h3>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Borrowing Activities</h3>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -154,7 +226,7 @@
         </div>
 
         <!-- Book Categories -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {{-- <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Book Categories</h3>
@@ -202,10 +274,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Popular Books -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+        {{-- <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Most Popular Books</h3>
 
@@ -250,7 +322,48 @@
                     </table>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function printActivityOnly() {
+        // Add the print class to body
+        document.body.classList.add('print-activity-only');
+
+        // Add a title for the activity-only print
+        let title = document.createElement('h2');
+        title.className = 'activity-print-title font-semibold text-xl text-center mb-4';
+        title.innerText = 'Library Activity Report';
+
+        // Add date range if filtered
+        @if($startDate && $endDate)
+        let dateRange = document.createElement('p');
+        dateRange.className = 'text-center mb-4';
+        dateRange.innerText = 'Period: {{ $startDate->format("M d, Y") }} to {{ $endDate->format("M d, Y") }}';
+        document.querySelector('.activity-section .p-6').prepend(dateRange);
+        @endif
+
+        document.querySelector('.activity-section .p-6').prepend(title);
+
+        // Delay printing slightly to ensure DOM updates
+        setTimeout(function() {
+            window.print();
+
+            // Remove the temporary elements and class after printing
+            setTimeout(function() {
+                document.body.classList.remove('print-activity-only');
+                const titleElem = document.querySelector('.activity-print-title');
+                if (titleElem) titleElem.remove();
+
+                @if($startDate && $endDate)
+                const dateRangeElem = document.querySelector('.activity-section .p-6 p.text-center');
+                if (dateRangeElem) dateRangeElem.remove();
+                @endif
+            }, 500);
+        }, 100);
+    }
+</script>
+@endpush
